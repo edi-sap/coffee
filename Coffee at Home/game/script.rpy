@@ -145,6 +145,10 @@ default barista_death = False
 default reason_with = False
 default break_door = False
 
+
+# Begin Red Eye Ending
+# -- Ending achieveable if you do not feed fred, the cat
+
 label red_eye_fight_loop:
     while barista_death == False:
         menu:
@@ -206,15 +210,32 @@ label post_red_eye_fight:
                         "The barista stays dead"
                     "shout":
                         "The barista stays dead"
-    menu:
-        "What do you do?"
-        "Sweep the beans":
-            "The lights all come on, and the smell of coffee greets your nose."
-            "Someone walks through the door, “I’ve been wanting to try this place. One cup of coffee, [coffee_order], please!” "
-        "Try the door":
-            "Still locked."
-            "You are the barista now."
-            
+
+default become_barista = False
+label red_eye_dispose_barista:
+
+    while become_barista != True:
+        menu:
+            "What do you do?"
+
+            "Sweep the beans":
+                "The lights all come on, and the smell of coffee greets your nose."
+                $ become_barista = True
+
+            "Try the door":
+                "Still locked."
+                "You are the barista now."
+
+label red_eye_become_barista_opening:
+    "Someone walks through the door."
+    "You recognize this person from your walk here, they live in the neighborhood."
+    "You said hello to them"
+
+    them "I’ve been wanting to try this place. One cup of coffee, [coffee_order], please!"
+
+default assimilate = False
+default explain_it = False
+label red_eye_become_barista_ending_choice:
     menu:
         "What do you do?"
         
@@ -223,26 +244,46 @@ label post_red_eye_fight:
             "but all the knowledge that you need comes to you," 
             "as if you’ve done this one thousand times before."
             "You wash away the sin of your crime in espresso, you work the remainder of the day in this coffee shop. "
-            jump arrive_at_home
+            $ assimilate = True
+            jump fred_ending
+
         "Try to explain what happened to this person":
             you "I’m not the barista."
             them "So why are you wearing the apron and uniform?"
+           
             menu: 
-                "I killed the barista.":
-                    you "They attacked me, and bled to death on the floor, but then they turned into these coffee beans."
-                    them "Don’t hurt me! Don’t come any closer."
+                "Talk about the fight":
+                    you "I killed the barista. They attacked me, and bled to death on the floor, but then they turned into these coffee beans."
                     "This person is very clearly alarmed and starting to panic."
-                    "They pick up a nearby coffee mug and throw it at you. It hits you in the head."
-                    "You pass out."
-                    jump bedroom
+                    them "Don’t hurt me! Don’t come any closer."
+                    "They pick up a nearby coffee mug." 
+                    menu:
+                        "Insist it's not what it looks like":
+                            you "It's not what it looks like. They started it, I was protecting myself."
+                            "They don't respond, fear still visibly alight in their eyes and audible their panicked breath."
+                            "At this moment, they throw the mug they were holding at you." 
+                            "It hits you in the head."
+                            "You pass out."
+                            jump bedroom
 
-                "I found it.":
-                    them "Very funny. To go, please"
-                #TODO Direct to either “Make the coffee” or “Try to explain”
+                        "Attack":
+                            "You swing back with the broom, poised to strike."
+                            "At this moment, they throw the mug they were holding at you." 
+                            "It hits you in the head."
+                            "You pass out."
+                            jump bedroom
+
+                "Pretend nothing happened":
+                    you "I found it. It was on the floor when I got here."
+                    them "Very funny. To go, please."
+                    jump red_eye_become_barista_ending_choice
 
 label brewed_awakening:
     scene shop
-    "How did you find this place?"
+    "You arrive at the coffee shop, and there are a few people that seem to recognize you hanging around."
+    "You don’t think that you remember any of them, but maybe you have one of those faces?"
+
+    "One of them waves at you you."
 
 label arrive_at_home:
     scene kitchen
@@ -261,10 +302,22 @@ label arrive_at_home:
             "Fred greets you"
             $ morning_fred = "Was that life? Well then, once more!"
             "and you assume he would like a pet. You pet Fred."
+    jump fred_ending
 
+label fred_ending:
     "The rest of the day passes as lovely as that first sip of coffee."
     "Your heart is warm and light. Fred takes an adorable nap in the sun, and you lie down on the floor in the afternoon light to take a nap with him."
 
-    jump bedroom
+    if assimilate == True:
+        "Fred says something."
+        jump red_ending
+    else:
+        jump bedroom
+
+label red_ending:
+    "Y'all come back now, hear?"
+
+label brewed_ending:
+    "Don't come back now, hear?"
 
     return
