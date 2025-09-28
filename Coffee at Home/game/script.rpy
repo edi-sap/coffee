@@ -8,11 +8,12 @@ define cat = Character("Fred", color="#ED872D")
 define barista = Character("Barista", color="#94450B")
 define lizard = Character("Lizard", color="#967117")
 define them = Character("Customer", color="#967117")
+define neighbor = Character("Neighbor", color="#967117")
 
 default coffee_at_home=False
 default fred_fed=False
 default email_checked=False
-default first_day=True
+
 default current_location="Bedroom"
 default coffee_order="tea"
 default morning_fred="meow"
@@ -32,21 +33,30 @@ label bedroom:
 
     "Your head hurts and looking at the clock (read: cellphone) you realize you’ve overslept a bit." 
 
-    "Rising out of bed, you give a stretch that makes your cat Fred proud, which he communicates by way of meow. It could also mean he is hungry."
+    if coffee_at_home == True:
+        you "Oh, no. Not this again."
+        "Quiet you, I'm telling a story here."
+
+    "Rising out of bed, you give a stretch that makes your cat Fred proud, which he communicates by way of meow." 
+
+    "It could also mean he is hungry."
 
     menu:
         "What do you do?"
 
-        "Check email":
+        "Check messages":
             jump email
         "Go to Kitchen":
             jump kitchen
+        "Head out in search of coffee":
+            jump neighborhood
 
 label email:
     $ email_checked=True
-    "You see an email forwarded from your friend Lizard,"
+    "You see a message from your friend Lizard"
+
     lizard "Check out this new coffee shop! They’re doing a $3 special for coffee this week! -- Liz"
-    "Fred yells at your in protest for paying attention to anything else."
+    "Fred yells at you, seemingly in protest for paying attention to anything else."
     
     menu:
         "What do you do?"
@@ -62,50 +72,61 @@ label kitchen:
     $ current_location="kitchen"
 
     default kitchen_information = "Your kitchen is a bit of a mess, and your cat Fred meows at you in protest of your late slumber."
-    default cabinet_information = "Bummer! Completely empty. Guess you have to go out for coffee."
+    default leaving_house = False
 
-    if email_checked == True:
-        "[kitchen_information]"
-    else: 
-        "[kitchen_information] Your phone beeps, indicating a new notification."
-        
-    menu:
-        "What do you do?"
+    while leaving_house == False:
+        menu:
+            "What do you do?"
 
-        "Check cabinets for coffee":
-            "[cabinet_information]"
+            "Check cabinets for coffee":
+                "Bummer! Completely empty. Guess you have to go out for coffee."
 
-        "Feed Fred":
-            cat "At last! To live is to suffer."
-            "says Fred, which he communicates by way of meow. Always such a concise fellow."
+            "Feed Fred":
+                $ fred_fed == True
+                cat "At last! To live is to suffer."
+                "says Fred, which he communicates by way of meow. Always such a concise fellow."
 
-        "Check email":
-            if email_checked == False:
-                jump email
-            else:
-                "No new messages."
+            "Head out in search of coffee":
+                $ leaving_house = True
+                jump neighborhood
 
 label neighborhood:
+    
     scene outside
     "The weather today is lovely, absolutely perfect light sweater weather." 
     "A nice warm beverage would absolutely pull this morning together, top ten of the year, probably." 
-    "The new coffee shop isn’t a far walk from your house, and you see a few of your neighbors and favorite dogs on the way there." 
-    "“Good morning!” some of them say, including the dogs."
+    if email_checked == True:
+        "The new coffee shop isn’t a far walk from your house, and you see a few of your neighbors and favorite dogs on the way there." 
+    if email_checked != True:
+        "While walking, you see a sign for a new coffee shop and decide to go and check it out."
+    
+    "A cute golden retriever walking their human starts to pull towards you when it sees you."
+    neighbor "Hey, good to see you! Have a good morning."
+    "They stop and let you pet their dog, who is elated at this"
+    
     if coffee_at_home == False:
         jump normal_coffee_shop
     if coffee_at_home == True and fred_fed == False:
         jump red_eye
     if coffee_at_home == True and email_checked == False:
         jump brewed_awakening
+    if coffee_at_home == True and tea_drinker == True:
+        jump normal_coffee_shop
 
 label normal_coffee_shop:
     scene shop
 
-    "You arrive at the coffee shop. It’s super cozy in here. There’s also no line, what luck! There’s only one person taking orders and making drinks. "
+    "You arrive at the coffee shop. It’s super cozy in here."
+    
+    if tea_drinker == True:
+        you "What is going on?"
+        "Quiet you, I'm telling a story here."
+
+    "There’s also no line, what luck! There’s only one person taking orders and making drinks. "
 
     "You approach"
 
-    barista "'Hi there!' the barista says to you, warmly. "
+    barista "'Hi there!' the barista says to you, warmly."
 
     barista "What can I get for you?"
 
@@ -120,6 +141,9 @@ label normal_coffee_shop:
         
         "black":
             $ coffee_order = "black"
+
+        "actually... can I just have tea?" if tea_drinker == True:
+            jump brewed_ending
 
     "The barista hands you your order"
     barista "One cup of coffee [coffee_order]!"
@@ -146,10 +170,8 @@ default reason_with = False
 default break_door = False
 
 
-# Begin Red Eye Ending
-# -- Ending achieveable if you do not feed fred, the cat
-
 label red_eye_fight_loop:
+# Cat not fed.
     while barista_death == False:
         menu:
             "What do you do?"
@@ -278,12 +300,170 @@ label red_eye_become_barista_ending_choice:
                     them "Very funny. To go, please."
                     jump red_eye_become_barista_ending_choice
 
+default engage_with_neighbor = False
+default continue_to_engage = False
 label brewed_awakening:
+    # Do not check your phone. Need to create loop to get to the shop if no phone.
     scene shop
     "You arrive at the coffee shop, and there are a few people that seem to recognize you hanging around."
     "You don’t think that you remember any of them, but maybe you have one of those faces?"
 
     "One of them waves at you you."
+    menu:
+        "What do you do?"
+
+        "Pretend you didn’t see them and look away":
+            "Turning away, you see out of the corner of your eye the person looks visibly hurt."
+        "Smile politely and wave in response":
+            "They approach."
+            $ engage_with_neighbor = True
+
+    if engage_with_neighbor == True:
+        them "Hey, how’s it going?"
+        "they ask you, with recognition in their eyes."
+        menu:
+            "You have no idea who this is."
+
+            "Hey! Oh, pretty good. how about you?":
+                them "Oh, pretty good myself. Didn’t think I’d see you here, of all people."
+                jump continue_to_engage
+            "Sorry, I can’t seem to remember you...":
+                "They wink at you"
+                them "Laying low, I see."
+                "the stranger walks away"
+                jump brewed_order
+    else:
+        "You approach the counter, the barista is looking at you with a look on their face of what appears to be disgust."
+
+label continue_to_engage:
+    "Well you're in this conversation now..."
+    menu:
+        "Oh? You didn't?":
+            them "After what you said? You're a monster."
+            "They laugh, clapping you on the shoulder"
+            "You stand there, confused, and then the person departs."
+            
+        "Hah, me neither.":
+            them "If they can't even get a coffee [coffee_order], right, do they even deserve to live?"
+            "They laugh, clapping you on the shoulder"
+            "You stand there, confused, and then the person departs."
+    
+    jump brewed_order
+
+default awake="They pick up another one, this one lands and hits you square between the eyes. Blood starts to run over your face, blocking your vision, and you start to remember… You are the critic. You did write all of those mean things."
+
+default brewed_customer = False
+default tea_drinker = False
+
+label brewed_order:
+    if engage_with_neighbor == True:
+        "You approach the counter, the barista is looking at you with a look on their face of… what appears to be disgust."
+    else:
+        "Weird."
+
+    menu:
+        "What do you do?"
+
+        "Order a coffee":
+            you "One cup of coffee, [coffee_order], please."
+
+        "Wait. Clearly they aren’t ready to take my order":
+            "The barista narrows their eyes at you"
+            barista "The silent treatment? Is that how you want to play it?" 
+            barista "Did you think I wouldn’t recognize you? Do you think I don’t know who you are?"
+    
+    barista "What are you doing here?" 
+    menu:    
+        "there is a definite a note of hostility in their voice."
+
+        "Maintain your innocence, you're just ordering a coffee":
+            you "Ordeing a coffee... I think."
+        "Try to de-escalate the situation":
+            you "Woah, I don't want any trouble."
+
+    menu:
+        "How do you know who I am?":
+            barista "Very funny."
+            "The barista reaches under the counter and pulls out a flyer with your face on it." 
+            "It reads cities #1 coffee critic destroys local coffee shop in latest review." 
+            
+        "I've been here before.":
+            barista "I know"
+            "The barista reaches under the counter and pulls out a flyer with your face on it." 
+            "It reads cities #1 coffee critic destroys local coffee shop in latest review." 
+            
+    menu:
+        "They evidence is pretty damning..."
+
+        "There must be some mistake.":
+            barista "It's insulting that you think I’m stupid enough to believe that."
+        "That’s not me.":
+            barista "It's insulting that you think I’m stupid enough to believe that."
+
+    "The barista picks up a coffee cup" 
+
+    barista "Would you like your coffee to go?" 
+    "They throw the mug at you, they miss."
+
+    menu:
+        "Well that escalated quickly."
+
+        "Head for the door":
+            "You turn around and run for the door."
+            "Approaching, you notice that it appears to be night outside."
+            "You're getting out of here, though."
+            "You open the door and step into the darkness"
+            jump bedroom
+
+        "Shout at them to stop":
+            "[awake]"
+
+    menu:
+        "Well well well, if it isn't the consequences of your own actions..."
+        
+        "Apologize":
+            $ tea_drinker == True
+            you "Hey, I’m sorry… I think I did write that, but I haven’t been myself lately."
+            you "I think there's something... wrong with me, and I'm stuck in a time loop until I figure it out."
+            barista "Come back and order tea."
+            you "What?"
+            barista "Come back tomorrow, order a tea, and it'll all be over."
+            you "How do you know that? Did you trap me here?"
+            barista "Just do it. You have to sleep now."
+            "The barista points towards the door, in which appears to be night outside"
+            you "I don't want to go back out there."
+            barista "You must."
+            
+            "You turn around and run for the door."
+            "Approaching, you notice that it appears to be night outside."
+            "You're getting out of here, though."
+            "You open the door and step into the darkness"
+            jump bedroom
+
+        "Double down":
+            $ brewed_customer = True
+            you "I said what I said, and judging by the fact that you just assaulted me, I didn't say enough."
+            "The barista goes glassy eyed, and starts to cry."
+            "Another customer approachs you and pushes you. Its the neighbor from before."
+            neighbor "What is wrong with you? Why are you such a monster? How could you be so cruel?"
+            menu:
+                "Double down, harder.":
+                    you "They make a bad product, I'm just the messenger."
+                "Question the interloper":
+                    you "Who are you to involve yourself with this? Why don't you mind your own business?"
+
+            "The person starts to push you towards the front door."
+            neighbor "Why don't you just leave?"
+            neighbor "Clearly no one wants you here. I don't know why anyone would want you anywhere."
+            "The barista continues to sob loudly in the background, and another neighbor member has come over to soothe them."
+            "Along with their dog, who once said hello to you but now looks at you with disappointment on its face."
+            "Another person has opened the door, and more customers have joined in pushing you out of the coffee shop"
+
+            "You turn around and run for the door."
+            "Approaching, you notice that it appears to be night outside."
+            "You're getting out of here, though."
+            "You open the door and step into the darkness"
+            jump bedroom
 
 label arrive_at_home:
     scene kitchen
@@ -315,9 +495,11 @@ label fred_ending:
         jump bedroom
 
 label red_ending:
+    #TODO: What is the red ending?
     "Y'all come back now, hear?"
 
 label brewed_ending:
+    #TODO: This is tea nirvana. You've been having too much caffiene. 
     "Don't come back now, hear?"
 
     return
