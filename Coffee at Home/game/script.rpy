@@ -11,6 +11,7 @@ define them = Character("Customer", color="#967117")
 define neighbor = Character("Neighbor", color="#967117")
 
 default coffee_at_home=False
+default day_plus = False
 
 # Red Eye Vars
 default attempt_flee = False
@@ -84,6 +85,7 @@ label email:
     $ email_checked=True
     "You see a message from your friend Lizard"
 
+    #TODO make phone screen
     lizard "Check out this new coffee shop! They’re doing a $3 special for coffee this week! -- Liz"
     "Fred yells at you, seemingly in protest for paying attention to anything else."
     
@@ -130,13 +132,14 @@ label neighborhood:
     if email_checked == True:
         "The new coffee shop isn’t a far walk from your house, and you see a few of your neighbors and favorite dogs on the way there." 
     if email_checked != True:
+        #TODO make flyer
         "While walking, you see a sign for a new coffee shop and decide to go and check it out."
     
     "A cute golden retriever walking their human starts to pull towards you when it sees you."
     neighbor "Hey, good to see you! Have a good morning."
     "They stop and let you pet their dog, who is elated at this"
     
-    if cabinets_checked == False:
+    if cabinets_checked == False && day_plus == True:
         $ coffee_at_home = True
 
     if coffee_at_home == False:
@@ -513,7 +516,7 @@ label fred_ending:
     "The rest of the day passes as lovely as that first sip of coffee."
     "Your heart is warm and light."
     "Fred takes an adorable nap in the sun, and you lie down on the floor in the afternoon light to take a nap with him."
-
+    $ day_plus = True
     if assimilate == True:
         "Fred says something."
         jump red_ending
