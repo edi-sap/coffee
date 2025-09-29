@@ -30,10 +30,14 @@ default continue_to_engage = False
 default brewed_customer = False
 default tea_drinker = False
 default awake="They pick up another one, this one lands and hits you square between the eyes. Blood starts to run over your face, blocking your vision, and you start to remember… You are the critic. You did write all of those mean things."
+default cabinets_checked = False
 
 default current_location="Bedroom"
 default coffee_order="tea"
 default morning_fred="meow"
+default fred_fed=False
+default email_checked=False
+
 
 # The game starts here.
 label start:
@@ -49,8 +53,8 @@ label bedroom:
         cat "[morning_fred]"
     
     # Morning vars, must be reset each day.
-    default fred_fed=False
-    default email_checked=False
+    $ fred_fed = False
+    $ email_checked = False
 
     "Your head hurts and looking at the clock (read: cellphone) you realize you’ve overslept a bit." 
 
@@ -99,8 +103,9 @@ label kitchen_options:
     menu:
         "What do you do?"
 
-        "Check cabinets for coffee":
+        "Check cabinets for coffee" if cabinets_checked == False:
             "Bummer! Completely empty. Guess you have to go out for coffee."
+            $ cabinets_checked = True
             jump kitchen_options
 
         "Feed Fred" if fred_fed == False:
@@ -108,11 +113,13 @@ label kitchen_options:
             cat "At last! To live is to suffer."
             "says Fred, which he communicates by way of meow. Always such a concise fellow."
             jump kitchen_options
+
         "Head out in search of coffee":
             # $ leaving_house = True
-            if fred_fed == False and email_checked == False:
+            if fred_fed == False and email_checked == False and cabinets_checked == False:
                 "Fred really insists you feed him before you leave by running underneath your legs and feet."
                 jump kitchen_options
+            
             else:
                 jump neighborhood
 
@@ -129,6 +136,9 @@ label neighborhood:
     neighbor "Hey, good to see you! Have a good morning."
     "They stop and let you pet their dog, who is elated at this"
     
+    if cabinets_checked == False:
+        $ coffee_at_home = True
+
     if coffee_at_home == False:
         jump normal_coffee_shop
     if coffee_at_home == True and fred_fed == False:
@@ -138,8 +148,9 @@ label neighborhood:
     if coffee_at_home == True and tea_drinker == True:
         jump normal_coffee_shop
 
+
 label normal_coffee_shop:
-    scene shop
+    scene shop_good
 
     "You arrive at the coffee shop. It’s super cozy in here."
     
@@ -178,7 +189,7 @@ label normal_coffee_shop:
 
 label red_eye:
 # cat not fed 
-    scene shop
+    scene shop_bad
     "You arrive at the coffee shop. From the outside, you don’t hear anything, and it seems like the lights are off. Odd, but coffee shops these days have to differentiate themselves somehow, and you proceed inside."
 
     "When you enter it’s dark, and completely empty, save for the barista behind the counter whose back is it you."
@@ -320,7 +331,7 @@ label red_eye_become_barista_ending_choice:
 
 label brewed_awakening:
     # Do not check your phone. Need to create loop to get to the shop if no phone.
-    scene shop
+    scene shop_good
     "You arrive at the coffee shop, and there are a few people that seem to recognize you hanging around."
     "You don’t think that you remember any of them, but maybe you have one of those faces?"
 
@@ -436,7 +447,7 @@ label brewed_order:
         "Well well well, if it isn't the consequences of your own actions..."
         
         "Apologize":
-            $ tea_drinker == True
+            $ tea_drinker = True
             you "Hey, I’m sorry… I think I did write that, but I haven’t been myself lately."
             you "I think there's something... wrong with me, and I'm stuck in a time loop until I figure it out."
             barista "Come back and order tea."
@@ -500,7 +511,8 @@ label arrive_at_home:
 
 label fred_ending:
     "The rest of the day passes as lovely as that first sip of coffee."
-    "Your heart is warm and light. Fred takes an adorable nap in the sun, and you lie down on the floor in the afternoon light to take a nap with him."
+    "Your heart is warm and light."
+    "Fred takes an adorable nap in the sun, and you lie down on the floor in the afternoon light to take a nap with him."
 
     if assimilate == True:
         "Fred says something."
