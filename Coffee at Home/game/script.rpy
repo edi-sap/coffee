@@ -11,8 +11,25 @@ define them = Character("Customer", color="#967117")
 define neighbor = Character("Neighbor", color="#967117")
 
 default coffee_at_home=False
-default fred_fed=False
-default email_checked=False
+
+# Red Eye Vars
+default attempt_flee = False
+default turn_back = False
+default barista_death = False
+default reason_with = False
+default break_door = False
+default become_barista = False
+default assimilate = False
+default explain_it = False
+default observed_corpse = False
+default passed_out = False
+
+# Brewed Vars
+default engage_with_neighbor = False
+default continue_to_engage = False
+default brewed_customer = False
+default tea_drinker = False
+default awake="They pick up another one, this one lands and hits you square between the eyes. Blood starts to run over your face, blocking your vision, and you start to remember… You are the critic. You did write all of those mean things."
 
 default current_location="Bedroom"
 default coffee_order="tea"
@@ -30,16 +47,26 @@ label bedroom:
     # play music "Destiny.mp3"
     if morning_fred != "meow":
         cat "[morning_fred]"
+    
+    # Morning vars, must be reset each day.
+    default fred_fed=False
+    default email_checked=False
 
     "Your head hurts and looking at the clock (read: cellphone) you realize you’ve overslept a bit." 
 
     if coffee_at_home == True:
-        you "Oh, no. Not this again."
+        you "Didn't I already do this?."
         "Quiet you, I'm telling a story here."
+        if passed_out == True:
+            you "My head hurts from the trauma!"
+            "Well, clearly you're doing something wrong." 
 
     "Rising out of bed, you give a stretch that makes your cat Fred proud, which he communicates by way of meow." 
 
     "It could also mean he is hungry."
+    if coffee_at_home == True:
+        you "But I already fed him today."
+        "Fred disagrees."
 
     menu:
         "What do you do?"
@@ -48,8 +75,6 @@ label bedroom:
             jump email
         "Go to Kitchen":
             jump kitchen
-        "Head out in search of coffee":
-            jump neighborhood
 
 label email:
     $ email_checked=True
@@ -62,36 +87,36 @@ label email:
         "What do you do?"
 
         "Head to check out the coffee shop":
+            $ coffee_at_home = True
             jump neighborhood
-        
-        "Go to the kitchen" if current_location !="kitchen":
-            jump kitchen
 
 label kitchen:
     scene kitchen
-    $ current_location="kitchen"
+    "Your kitchen is a bit of a mess, and your cat Fred meows at you in protest of your late slumber."
 
-    default kitchen_information = "Your kitchen is a bit of a mess, and your cat Fred meows at you in protest of your late slumber."
-    default leaving_house = False
+label kitchen_options:
+    # You MUST EITHER check your messages or feed fred.
+    menu:
+        "What do you do?"
 
-    while leaving_house == False:
-        menu:
-            "What do you do?"
+        "Check cabinets for coffee":
+            "Bummer! Completely empty. Guess you have to go out for coffee."
+            jump kitchen_options
 
-            "Check cabinets for coffee":
-                "Bummer! Completely empty. Guess you have to go out for coffee."
-
-            "Feed Fred":
-                $ fred_fed == True
-                cat "At last! To live is to suffer."
-                "says Fred, which he communicates by way of meow. Always such a concise fellow."
-
-            "Head out in search of coffee":
-                $ leaving_house = True
+        "Feed Fred" if fred_fed == False:
+            $ fred_fed = True
+            cat "At last! To live is to suffer."
+            "says Fred, which he communicates by way of meow. Always such a concise fellow."
+            jump kitchen_options
+        "Head out in search of coffee":
+            # $ leaving_house = True
+            if fred_fed == False and email_checked == False:
+                "Fred really insists you feed him before you leave by running underneath your legs and feet."
+                jump kitchen_options
+            else:
                 jump neighborhood
 
 label neighborhood:
-    
     scene outside
     "The weather today is lovely, absolutely perfect light sweater weather." 
     "A nice warm beverage would absolutely pull this morning together, top ten of the year, probably." 
@@ -126,7 +151,8 @@ label normal_coffee_shop:
 
     "You approach"
 
-    barista "'Hi there!' the barista says to you, warmly."
+    barista "Hi there!"
+    "the barista greets you, warmly."
 
     barista "What can I get for you?"
 
@@ -151,6 +177,7 @@ label normal_coffee_shop:
     jump arrive_at_home
 
 label red_eye:
+# cat not fed 
     scene shop
     "You arrive at the coffee shop. From the outside, you don’t hear anything, and it seems like the lights are off. Odd, but coffee shops these days have to differentiate themselves somehow, and you proceed inside."
 
@@ -161,14 +188,6 @@ label red_eye:
     barista "Dead are all gods."
 
     "The barista starts to climb over the counter."
-
-
-default attempt_flee = False
-default turn_back = False
-default barista_death = False
-default reason_with = False
-default break_door = False
-
 
 label red_eye_fight_loop:
 # Cat not fed.
@@ -201,8 +220,6 @@ label red_eye_fight_loop:
                 "You punch the barista in the face. They crumple like a paper cup."
                 jump post_red_eye_fight
 
-
-default observed_corpse = False
 label post_red_eye_fight:
     "They lie on the ground, still, cold, dead. Before your eyes their lifeless body begins to decay" 
     "at first glance. Falling away from a human form into what appears to be dirt"
@@ -222,7 +239,7 @@ label post_red_eye_fight:
                 "You observe your body, still shaking a little from the altercation." 
                 "Your arms covered in a thin layer of goosebumps,"
                 "there are coffee stains on your clothes, and you hands have coffee grounds all over them." 
-                "Who will wipe this coffee off of you? What water will you use to clean yourself?"
+                "Who will wipe this caffienated sin off of you? What will you use to clean yourself?"
 
             "Inspect the body":
                 $ observed_corpse = True
@@ -233,7 +250,7 @@ label post_red_eye_fight:
                     "shout":
                         "The barista stays dead"
 
-default become_barista = False
+
 label red_eye_dispose_barista:
 
     while become_barista != True:
@@ -255,8 +272,6 @@ label red_eye_become_barista_opening:
 
     them "I’ve been wanting to try this place. One cup of coffee, [coffee_order], please!"
 
-default assimilate = False
-default explain_it = False
 label red_eye_become_barista_ending_choice:
     menu:
         "What do you do?"
@@ -286,6 +301,7 @@ label red_eye_become_barista_ending_choice:
                             "At this moment, they throw the mug they were holding at you." 
                             "It hits you in the head."
                             "You pass out."
+                            $ passed_out = True
                             jump bedroom
 
                         "Attack":
@@ -293,6 +309,7 @@ label red_eye_become_barista_ending_choice:
                             "At this moment, they throw the mug they were holding at you." 
                             "It hits you in the head."
                             "You pass out."
+                            $ passed_out = True
                             jump bedroom
 
                 "Pretend nothing happened":
@@ -300,8 +317,7 @@ label red_eye_become_barista_ending_choice:
                     them "Very funny. To go, please."
                     jump red_eye_become_barista_ending_choice
 
-default engage_with_neighbor = False
-default continue_to_engage = False
+
 label brewed_awakening:
     # Do not check your phone. Need to create loop to get to the shop if no phone.
     scene shop
@@ -334,6 +350,7 @@ label brewed_awakening:
                 jump brewed_order
     else:
         "You approach the counter, the barista is looking at you with a look on their face of what appears to be disgust."
+        jump brewed_order
 
 label continue_to_engage:
     "Well you're in this conversation now..."
@@ -350,10 +367,7 @@ label continue_to_engage:
     
     jump brewed_order
 
-default awake="They pick up another one, this one lands and hits you square between the eyes. Blood starts to run over your face, blocking your vision, and you start to remember… You are the critic. You did write all of those mean things."
 
-default brewed_customer = False
-default tea_drinker = False
 
 label brewed_order:
     if engage_with_neighbor == True:
@@ -377,7 +391,7 @@ label brewed_order:
         "there is a definite a note of hostility in their voice."
 
         "Maintain your innocence, you're just ordering a coffee":
-            you "Ordeing a coffee... I think."
+            you "Ordering a coffee... I think."
         "Try to de-escalate the situation":
             you "Woah, I don't want any trouble."
 
@@ -497,9 +511,9 @@ label fred_ending:
 label red_ending:
     #TODO: What is the red ending?
     "Y'all come back now, hear?"
+    return
 
 label brewed_ending:
     #TODO: This is tea nirvana. You've been having too much caffiene. 
     "Don't come back now, hear?"
-
     return
