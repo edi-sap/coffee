@@ -7,8 +7,9 @@ define you = Character("You", color="#343D45")
 define cat = Character("Fred", color="#ED872D")
 define barista = Character("Barista", color="#94450B")
 define lizard = Character("Lizard", color="#967117")
-define them = Character("Customer", color="#967117")
-define neighbor = Character("Neighbor", color="#967117")
+define them = Character("Customer", color="#d75e06 ")
+define neighbor = Character("Neighbor", color="#ec5800")
+define dog = Character("Dog", color="#0b5394")
 
 default coffee_at_home=False
 default day_plus = False
@@ -59,19 +60,26 @@ label bedroom:
 
     "Your head hurts and looking at the clock (read: cellphone) you realize you’ve overslept a bit." 
 
-    if coffee_at_home == True:
+    if day_plus == True:
         you "Didn't I already do this?."
         "Quiet you, I'm telling a story here."
         if passed_out == True:
             you "My head hurts from the trauma!"
             "Well, clearly you're doing something wrong." 
+    elif tea_drinker == True:
+        you "I've definitely done this."
+        "Unlikely, fred would remember."
+        cat "and I don't."
 
     "Rising out of bed, you give a stretch that makes your cat Fred proud, which he communicates by way of meow." 
 
     "It could also mean he is hungry."
-    if coffee_at_home == True:
+    if day_plus == True:
         you "But I already fed him today."
         "Fred disagrees."
+        if tea_drinker == True:
+            you "I have absolutely fed you."
+            cat "You clearly don't know how time loops work"
 
     menu:
         "What do you do?"
@@ -114,6 +122,12 @@ label kitchen_options:
             $ fred_fed = True
             cat "At last! To live is to suffer."
             "says Fred, which he communicates by way of meow. Always such a concise fellow."
+            if day_plus == True:
+                "See? I told you he wasn't fed, he wouldn't lie about this"
+                cat "Yeah, I wouldn't lie about this"
+                you "The cat is talking?!"
+                "Quiet, we're telling a story here."
+
             jump kitchen_options
 
         "Head out in search of coffee":
@@ -137,9 +151,21 @@ label neighborhood:
     
     "A cute golden retriever walking their human starts to pull towards you when it sees you."
     neighbor "Hey, good to see you! Have a good morning."
-    "They stop and let you pet their dog, who is elated at this"
-    
-    if cabinets_checked == False && day_plus == True:
+    "They stop and let you pet the dog, who is elated at this"
+
+    if day_plus == True:
+        "you whisper"
+        you "Help! I'm stuck in a time loop."
+        "The dog wags its tail enthusiastically"
+        neighbor "No you're not."
+        dog "What wild ecstasy! Remember: no eye at all is better than an evil one, dark master."
+        you "You can talk, too?"
+        dog "woof."
+        if tea_drinker == True:
+            neighbor "The path lies before you."
+            you "Oh, now you believe me?"
+
+    if cabinets_checked == False and day_plus == True:
         $ coffee_at_home = True
 
     if coffee_at_home == False:
@@ -446,9 +472,10 @@ label brewed_order:
         "Shout at them to stop":
             "[awake]"
 
+    scene shop_bad
     menu:
         "Well well well, if it isn't the consequences of your own actions..."
-        
+
         "Apologize":
             $ tea_drinker = True
             you "Hey, I’m sorry… I think I did write that, but I haven’t been myself lately."
@@ -464,7 +491,7 @@ label brewed_order:
             
             "You turn around and run for the door."
             "Approaching, you notice that it appears to be night outside."
-            "You're getting out of here, though."
+            "You have to get out of here, though."
             "You open the door and step into the darkness"
             jump bedroom
 
@@ -494,11 +521,11 @@ label brewed_order:
             jump bedroom
 
 label arrive_at_home:
-    scene kitchen
+    scene home
     "You arrive at home, what a nice little coffee shop."
     
     menu:
-        "Did you finish your coffee?"
+        "You still have some coffee"
 
         "Save it for later.":
             "Fred greets you"
@@ -506,13 +533,20 @@ label arrive_at_home:
             "and you assume he would like a pet. You pet Fred."
             $ coffee_at_home = True
 
-        "I did finish it, yum!":
+        "I finish it, yum!":
             "Fred greets you"
             $ morning_fred = "Was that life? Well then, once more!"
             "and you assume he would like a pet. You pet Fred."
+
+        "I play with Fred and savor it slowly":
+            "Fred greets you"
+            $ morning_fred = "Was that life? Well then, once more!"
+            "and you give him a pet, and play with some string for a while."
+
     jump fred_ending
 
 label fred_ending:
+    scene home
     "The rest of the day passes as lovely as that first sip of coffee."
     "Your heart is warm and light."
     "Fred takes an adorable nap in the sun, and you lie down on the floor in the afternoon light to take a nap with him."
@@ -525,10 +559,13 @@ label fred_ending:
 
 label red_ending:
     #TODO: What is the red ending?
-    "Y'all come back now, hear?"
+    you "Y'all come back now, hear?"
+    "You work at the coffee shop now."
     return
 
 label brewed_ending:
     #TODO: This is tea nirvana. You've been having too much caffiene. 
-    "Don't come back now, hear?"
+    "You order the tea."
+    "You are forgiven."
+    barista "Don't come back now, hear?"
     return
